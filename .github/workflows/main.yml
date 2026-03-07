@@ -1,0 +1,52 @@
+name: Project health check
+
+on:
+  push:
+    branches: ["master"]
+  pull_request:
+    branches: ["master"]
+
+
+jobs:
+  development_check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download the code
+        uses: actions/checkout@v4
+
+      - name: Download PHP with its extensions
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: mbstring, bcmath, ctype, fileinfo, json, tokenizer, xml, pdo_mysql, redis
+          tools: pint
+      
+      - name: Install composer packages
+        run: composer install --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
+
+      - name: Check code style
+        run: pint --test
+      
+      - name: Install node packages
+        run: npm ci
+
+      - name: Build assets
+        run: npm run build
+
+      - name: Prepare the environment
+        run: | 
+          cp .env.example .env
+          php artisan key:generate
+      
+      - name: Check Database Migrations
+        env:
+          DB_CONNECTION: sqlite
+          DB_DATABASE: ":memory"
+        run: php artisan migrate --force
+
+      - name: Execute Tests
+        env:
+          DB_CONNECTION: sqlite
+          DB_DATABASE: ":memory:"
+        run: php artisan test
