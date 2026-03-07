@@ -20,13 +20,12 @@ jobs:
         with:
           php-version: '8.4'
           extensions: mbstring, bcmath, ctype, fileinfo, json, tokenizer, xml, pdo_mysql, redis
-          tools: pint
       
       - name: Install composer packages
         run: composer install --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
 
       - name: Check code style
-        run: pint --test
+        run: ./vendor/bin/pint --test
       
       - name: Install node packages
         run: npm ci
