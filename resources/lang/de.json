@@ -1,0 +1,18 @@
+{
+    "Password": "Passwort",
+    "Username": "Benutzername",
+    "First Name": "Vorname",
+    "Last Name": "Nachname",
+    "Register": "Registrieren",
+    "Email": "E-Mail",
+    "Login": "Anmelden",
+    "Logout": "Abmelden",
+    "All": "Alle",
+    "Completed": "Abgeschlossen",
+    "In Progress": "In Bearbeitung",
+    "Login Now": "Jetzt anmelden",
+    "Your email": "Ihre E-Mail",
+    "Your password": "Ihr Passwort",
+    "Remember me": "Erinnere dich an mich",
+    "User created successfully. Redirecting you to login page...": "Benutzer erfolgreich erstellt. Sie werden zur Anmeldeseite weitergeleitet..."
+}
