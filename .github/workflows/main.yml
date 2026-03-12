@@ -10,6 +10,9 @@ on:
 jobs:
   development_check:
     runs-on: ubuntu-latest
+    env:
+      DB_CONNECTION: sqlite
+      DB_DATABASE: ":memory:"
 
     steps:
       - name: Download the code
@@ -26,11 +29,17 @@ jobs:
 
       - name: Check code style
         run: ./vendor/bin/pint --test
+      
+      - name: Check Database Migrations
+        run: php artisan migrate --force
+
+      - name: Execute Tests
+        run: php artisan test
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '22.22.1'
+          node-version: '22.22.0'
 
       - name: Ensure specific npm version
         run: npm install -g npm@11.10.0
@@ -46,22 +55,12 @@ jobs:
       - name: Build assets
         run: npm run build
 
-      - name: Prepare the environment
-        run: | 
-          cp .env.example .env
-          php artisan key:generate
-      
-      - name: Check Database Migrations
-        env:
-          DB_CONNECTION: sqlite
-          DB_DATABASE: ":memory:"
-        run: php artisan migrate --force
-
-      - name: Execute Tests
-        env:
-          DB_CONNECTION: sqlite
-          DB_DATABASE: ":memory:"
-        run: php artisan test
+      - name: Save Build Folder
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-assets
+          path: public/build/
+          retention-days: 1
   
   deploy:
     if: github.event_name == 'push' && github.ref == 'refs/heads/master'
@@ -72,33 +71,11 @@ jobs:
       - name: Download the code
         uses: actions/checkout@v4
 
-      - name: Download PHP with its extensions
-        uses: shivammathur/setup-php@v2
+      - name: Download Build Folder
+        uses: actions/download-artifact@v4
         with:
-          php-version: '8.4'
-          extensions: mbstring, bcmath, ctype, fileinfo, json, tokenizer, xml, pdo_mysql, redis
-      
-      - name: Install composer packages
-        run: composer install --no-ansi --no-interaction --no-progress --no-scripts --prefer-dist --no-dev --optimize-autoloader
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '22.22.1'
-
-      - name: Ensure specific npm version
-        run: npm install -g npm@11.10.0
-
-      - name: Prepare the environment
-        run: | 
-          cp .env.example .env
-          php artisan key:generate
-
-      - name: Install node packages
-        run: npm ci
-
-      - name: Build assets
-        run: npm run build
+          name: frontend-assets
+          path: public/build/
       
       - name: Clean old assets on the instance
         uses: appleboy/ssh-action@v1.0.0
@@ -109,7 +86,6 @@ jobs:
           script: |
             cd /var/www/html/task-and-communication
             php artisan down
-            git pull origin master
             rm -rf public/build
 
       - name: Copy built assets to the instance
@@ -130,8 +106,9 @@ jobs:
          key: ${{ secrets.EC2_SSH_KEY }}
          script: |
            cd /var/www/html/task-and-communication
+           git pull origin master
            composer install --no-ansi --no-interaction --no-progress --no-scripts --prefer-dist --no-dev --optimize-autoloader
-           rm -f bootstrap/cache/config.php bootstrap/cache/services.php bootstrap/cache/routes.php bootstrap/cache/packages.php
+           rm -f bootstrap/cache/*.php
            php artisan migrate --force
            php artisan optimize
            php artisan up
