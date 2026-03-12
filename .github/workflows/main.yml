@@ -35,6 +35,11 @@ jobs:
       - name: Ensure specific npm version
         run: npm install -g npm@11.10.0
       
+      - name: Prepare the environment
+        run: | 
+          cp .env.example .env
+          php artisan key:generate
+      
       - name: Install node packages
         run: npm ci
 
