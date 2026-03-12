@@ -34,7 +34,7 @@ class ProcessImageUpload implements ShouldQueue
     {
         $localStorage = Storage::disk('local');
 
-        if (! $localStorage->exists($this->tempPath)) {
+        if (!$localStorage->exists($this->tempPath)) {
             return;
         }
 
