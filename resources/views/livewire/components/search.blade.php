@@ -1,5 +1,5 @@
 <div class="flex items-center bg-grey-50 w-full max-w-[50%] rounded-lg overflow-hidden">
-    <x-heroicon-o-magnifying-glass class="w-6 h-6 text-gray-500 absolute left-2" />
+    <x-heroicon-o-magnifying-glass class="w-6 h-6 text-gray-500 absolute left-6" />
     <input name="search"
         type="text"
         class="form-input border-0 rounded-none bg-transparent pl-10 focus:ring-0"
