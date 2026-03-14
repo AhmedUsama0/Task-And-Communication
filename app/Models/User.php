@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
-use Exception;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -15,6 +14,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Laravel\Scout\Searchable;
+use Throwable;
 
 class User extends Authenticatable
 {
@@ -78,29 +78,38 @@ class User extends Authenticatable
             return $fallbackImage;
         }
 
-        // Small difference between them as a buffer to ensure the image will not be broken
+        // Small difference between temporary URL time and cached image URL as a buffer to ensure the image will not be broken
         // Because there is a time consumed till the URL is served from the cache and passed to the browser
         // And the browser sends a request with the link, so if during this time the URL expires then we will end
         // serving an expired URL to the user, so this gap acts as a safety by removing the current URL from the cache and generate a new one
         // before the current URL expired, and at this point we will have two URLs, the new one and the old one which will take 20 seconds to expire.
-        $urlExpiry = now()->addMinutes(5);
-        $cacheExpire = now()->addMinutes(4)->addSeconds(40);
+        $cacheKey = $imagePath.'-'.$this->id;
 
-        return Cache::remember($imagePath.'-'.$this->id, $cacheExpire, function () use ($imagePath, $fallbackImage, $urlExpiry) {
-            // Genearte signed temporary url to enable the user with this link to access the image in the private bucket
+        try {
+            $cacheImageUrl = Cache::get($cacheKey);
+
+            if ($cacheImageUrl) {
+                return $cacheImageUrl;
+            }
+        } catch (Throwable $e) {
+            Log::warning(sprintf('Failed to get the cache for image in %s: %s', __CLASS__, $e->getMessage()));
+        }
+
+        try {
+            $userImage = Storage::disk('s3')->temporaryUrl($imagePath, now()->addMinutes(5));
+
             try {
-                return Storage::disk('s3')->temporaryUrl($imagePath, $urlExpiry);
-            } catch (Exception $e) {
-                Log::error('Failed to generate signed URL for user image', [
-                    'user_id' => $this->id,
-                    'image_path' => $imagePath,
-                    'error' => $e->getMessage(),
-                    'class' => __CLASS__,
-                ]);
+                Cache::put($cacheKey, $userImage, now()->addMinutes(4)->addSeconds(40));
+            } catch (Throwable $e) {
+                Log::warning(sprintf('Failed to cache the image in %s: %s', __CLASS__, $e->getMessage()));
             }
 
-            return $fallbackImage;
-        });
+            return $userImage;
+        } catch (Throwable $e) {
+            Log::error(sprintf('Failed to connect to s3 in %s: %s', __CLASS__, $e->getMessage()));
+        }
+
+        return $fallbackImage;
     }
 
     /**
