@@ -16,7 +16,7 @@
     :class="collapsed ? '' : 'border border-grey-200 shadow-lg'"
 >
     <div class="header p-3 bg-primary text-white flex items-center justify-between order-last">
-        <p @click="collapsed = !collapsed" class="font-medium truncate cursor-pointer flex-1">{{$receiver['member_name']}}</p>
+        <p @click="collapsed = !collapsed" class="font-medium truncate cursor-pointer flex-1">{{$receiver}}</p>
         <div class="flex items-center gap-x-1">
             <button @click="collapsed = !collapsed" class="p-1 hover:bg-blue-600 rounded transition-colors">
                 <span class="transition-transform duration-200 block" :class="{ 'rotate-180': !collapsed }">

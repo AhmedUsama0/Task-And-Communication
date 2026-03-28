@@ -30,7 +30,7 @@ class Conversation extends Component
     public int $conversationId;
 
     #[Locked]
-    public array $receiver;
+    public string $receiver;
 
     public array $messages = [];
 

@@ -24,7 +24,7 @@
             @livewire('task-modal')
             @livewire('chat-manager')
         @endauth
-
+        @livewire('notification')
         {{$slot}}
         @livewireScriptConfig 
     </body>

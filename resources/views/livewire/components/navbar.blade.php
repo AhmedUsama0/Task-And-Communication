@@ -21,8 +21,8 @@
             <div @click="isOpen = !isOpen" 
                  class="flex items-center gap-x-2 cursor-pointer p-2 rounded-lg hover:bg-grey-100 transition-colors"
             >
-              <img class="rounded-full h-10 w-10 border-2 border-grey-200" src="{{Auth::user()->image}}">
-              <span class="text-sm font-medium text-gray-700">{{Auth::user()->getFullName()}}</span>
+              <img class="rounded-full h-10 w-10 border-2 border-grey-200" src="{{Auth::user()?->image}}">
+              <span class="text-sm font-medium text-gray-700">{{Auth::user()?->getFullName()}}</span>
               <span class="transition-transform duration-200" :class="{'rotate-180': isOpen}">
                 <x-heroicon-o-chevron-down class="w-4 h-4 text-gray-500" />
               </span>
@@ -39,8 +39,8 @@
                 class="absolute right-0 top-full mt-2 w-56 bg-white rounded-lg shadow-lg border border-grey-200 overflow-hidden z-50"
             >
               <li class="px-4 py-3 border-b border-grey-200">
-                <p class="text-sm font-medium text-gray-900">{{Auth::user()->getFullName()}}</p>
-                <p class="text-xs text-gray-500 truncate">{{Auth::user()->email}}</p>
+                <p class="text-sm font-medium text-gray-900">{{Auth::user()?->getFullName()}}</p>
+                <p class="text-xs text-gray-500 truncate">{{Auth::user()?->email}}</p>
               </li>
               <li>
                 <label class="flex items-center gap-x-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-primary-lighter hover:text-primary transition-colors cursor-pointer">

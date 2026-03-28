@@ -24,17 +24,7 @@
             class="absolute top-full left-0 mt-2 w-40 bg-white rounded-lg shadow-lg border border-grey-200 overflow-hidden z-50">
             <li>
                 <button
-                    wire:click="$dispatch(
-                        'new-chat',
-                        @js(
-                            [
-                                'conversation' => [
-                                    'receiver' => ['member_id' => $member->id, 'member_name' => $member->getFullName()],
-                                    'conversation_id' => $member->conversations->first()?->id ?? 0
-                                ]
-                            ]
-                        )
-                    );
+                    wire:click="$dispatch('new-chat', @js(['member' => ['member_id' => Hashids::encode($member->id), 'member_name' => $member->getFullName()]]));
                     isOpen = false"
                     class="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-primary-lighter hover:text-primary transition-colors flex items-center gap-x-2">
                     <x-heroicon-o-chat-bubble-oval-left class="w-4 h-4" />
